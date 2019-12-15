@@ -88,7 +88,7 @@ print(ttnctl_device_list)
 print(ttnctl_device_list_devid)
 print(maximum_id)
 
-if args.name not in ttnctl_device_list:
+if True:#args.name not in ttnctl_device_list:
   device_id=""
   print("args.name: " + args.name)
   if args.name == "auto":
@@ -138,8 +138,14 @@ if args.name not in ttnctl_device_list:
     print(ttnctl_device_register_abp)
     input_string=""
     for line in ttnctl_device_register_abp.splitlines():
-      if "Personalized devices" in line:
+      #print("line "+ line)
+      if "Personalized device" in line:
         input_string=line
+        #print("input_string "+ input_string)
+
+    if input_string == "":
+      print("Key error")
+      sys.exit()
     input_string =  ' '.join(input_string.split())
     input_string_list = input_string.split(" ")
 
@@ -147,7 +153,7 @@ if args.name not in ttnctl_device_list:
     DevAddr=""
     NwkSKey=""
     for item in input_string_list:
-        print(item)
+        #print(item)
         if "AppSKey" in item:
             AppSKey=item.split("=")[1]
             #print(AppSKey)
