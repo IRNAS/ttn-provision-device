@@ -14,8 +14,8 @@ import sys
 
 ### Command line argument parser
 parser = argparse.ArgumentParser(description='Lorawan device provisioning tool!')
-parser.add_argument("--name", default=1, type=str,required=True, help="This is the device name")
-parser.add_argument("--key", default=1, type=str,required=True, help="This is ttn access key https://account.thethingsnetwork.org/users/authorize?client_id=ttnctl&redirect_uri=/oauth/callback/ttnctl&response_type=code")
+parser.add_argument("--name", default=1, type=str,required=False, help="This is the device name")
+parser.add_argument("--key", default=1, type=str,required=False, help="This is ttn access key https://account.thethingsnetwork.org/users/authorize?client_id=ttnctl&redirect_uri=/oauth/callback/ttnctl&response_type=code")
 parser.add_argument("--type", 
                     choices=["abp", "otaa"],
                     required=True, type=str, help="abp/otaa")
@@ -45,7 +45,6 @@ f.close()
 
 # get the keys to a variable
 app_id=cfg["ttn-app"]["id"]
-access_key =cfg["ttn-app"]["key"]
 
 ### Make sure user is logged in
 ttnctl_user_login = os.popen('ttnctl user').read()
@@ -62,132 +61,151 @@ else:
 ttnctl_application_select = os.popen('ttnctl applications select '+app_id).read()
 print(ttnctl_application_select)
 
-ttnctl_device_list = os.popen('ttnctl devices list').read()
-# get a list of parsed device ids
-ttnctl_device_list_devid=[]
-for line in ttnctl_device_list.splitlines():
-    if "DevID"in line:
-        pass
-    elif "INFO"in line:
-        pass
+device_name=args.name
+
+
+while True:
+    input_var = input("Enter device name to register or type a for automatic numbering: ")
+    # TODO enable the name to be overwritten from cli
+    if(input_var == "a"):
+        device_name="auto"
     else:
-        line_split =  ' '.join(line.split())
-        line_split = line_split.split(" ")
-        if line_split[0] is not '':
-            ttnctl_device_list_devid.append(line_split[0])
-#determine the largest number of all
-maximum_id=0
-for item in ttnctl_device_list_devid:
-    try:
-        number=int(item.split("-")[-1])
-        maximum_id=max(number,maximum_id)
-    except:
-        pass
+        device_name=input_var #TODO: calidate device naming convention
+    print("Device name selected: "+device_name)
 
-print(ttnctl_device_list)
-print(ttnctl_device_list_devid)
-print(maximum_id)
+    ttnctl_device_list = os.popen('ttnctl devices list').read()
+    # get a list of parsed device ids
+    ttnctl_device_list_devid=[]
+    for line in ttnctl_device_list.splitlines():
+        if "DevID"in line:
+            pass
+        elif "INFO"in line:
+            pass
+        else:
+            line_split =  ' '.join(line.split())
+            line_split = line_split.split(" ")
+            if line_split[0] is not '':
+                ttnctl_device_list_devid.append(line_split[0])
+    #determine the largest number of all
+    maximum_id=0
+    for item in ttnctl_device_list_devid:
+        try:
+            number=int(item.split("-")[-1])
+            maximum_id=max(number,maximum_id)
+        except:
+            pass
 
-if True:#args.name not in ttnctl_device_list:
-  device_id=""
-  print("args.name: " + args.name)
-  if args.name == "auto":
-    # find the largest device id already registered and take the next one
-    device_id="%s-%03d" % (app_id, maximum_id+1)
-    print(device_id)
+    print(ttnctl_device_list)
+    print(ttnctl_device_list_devid)
+    print(maximum_id)
 
-  else:
-    device_id=args.name
-  
-  ttnctl_device_register = os.popen('ttnctl devices register '+device_id).read()
-  print(ttnctl_device_register)
-  #first register as OTAA, then provision to ABP if required
-  # all of these is to parse outputs to variables
-  input_string=""
-  for line in ttnctl_device_register.splitlines():
-    if "Registered device" in line:
-      input_string=line
-  input_string =  ' '.join(input_string.split())
-  input_string_list = input_string.split(" ")
+    if device_name in ttnctl_device_list:
+        input_var = input("Device "+device_name+ " already registered, continue? [y/n] ")
+        if(input_var == "y"):
+            pass
+        else:
+            break
 
-  AppKey=""
-  DevEUI=""
-  AppEUI=""
-  for item in input_string_list:
-      #print(item)
-      if "AppKey" in item:
-          AppKey=item.split("=")[1]
-          #print(AppKey)
-      elif "DevEUI" in item:
-          DevEUI=item.split("=")[1]
-          #print(DevEUI)
-      elif "AppEUI" in item:
-          AppEUI=item.split("=")[1]
-          #print(AppEUI)
-  # then write to .h file for compiling
-  f = open("LoRaWAN_Save_Commissioning_Rhino/provisioning.h", "w")
-  f.write("#define OTAA\n\r")
-  f.write("const char *appKey = \""+AppKey+"\";\n\r")
-  f.write("const char *devEui = \""+DevEUI+"\";\n\r")
-  f.write("const char *appEui = \""+AppEUI+"\";\n\r")
-  f.close()
+    device_id=""
+    print("device_name: " + device_name)
+    if device_name == "auto":
+        # find the largest device id already registered and take the next one
+        device_id="%s-%03d" % (app_id, maximum_id+1)
+        print(device_id)
 
-        
-  if activation_type == "abp":
-    ttnctl_device_register_abp = os.popen('ttnctl devices personalize '+device_id).read()
-    print(ttnctl_device_register_abp)
+    else:
+        device_id=device_name
+    
+    ttnctl_device_register = os.popen('ttnctl devices register '+device_id).read()
+    print(ttnctl_device_register)
+    #first register as OTAA, then provision to ABP if required
+    # all of these is to parse outputs to variables
     input_string=""
-    for line in ttnctl_device_register_abp.splitlines():
-      #print("line "+ line)
-      if "Personalized device" in line:
-        input_string=line
-        #print("input_string "+ input_string)
-
-    if input_string == "":
-      print("Key error")
-      sys.exit()
+    for line in ttnctl_device_register.splitlines():
+        if "Registered device" in line:
+            input_string=line
     input_string =  ' '.join(input_string.split())
     input_string_list = input_string.split(" ")
 
-    AppSKey=""
-    DevAddr=""
-    NwkSKey=""
+    AppKey=""
+    DevEUI=""
+    AppEUI=""
     for item in input_string_list:
         #print(item)
-        if "AppSKey" in item:
-            AppSKey=item.split("=")[1]
-            #print(AppSKey)
-        elif "DevAddr" in item:
-            DevAddr=item.split("=")[1]
+        if "AppKey" in item:
+            AppKey=item.split("=")[1]
+            #print(AppKey)
+        elif "DevEUI" in item:
+            DevEUI=item.split("=")[1]
             #print(DevEUI)
-        elif "NwkSKey" in item:
-            NwkSKey=item.split("=")[1]
+        elif "AppEUI" in item:
+            AppEUI=item.split("=")[1]
             #print(AppEUI)
-
+    # then write to .h file for compiling
     f = open("LoRaWAN_Save_Commissioning_Rhino/provisioning.h", "w")
-    f.write("#define ABP\n\r")
-    f.write("const char *devAddr = \""+DevAddr+"\";\n\r")
-    f.write("const char *nwkSKey = \""+NwkSKey+"\";\n\r")
-    f.write("const char *appSKey = \""+AppSKey+"\";\n\r")
+    f.write("#define OTAA\n\r")
+    f.write("const char *appKey = \""+AppKey+"\";\n\r")
+    f.write("const char *devEui = \""+DevEUI+"\";\n\r")
+    f.write("const char *appEui = \""+AppEUI+"\";\n\r")
     f.close()
 
-  ### Provision the keys to the device
-  compile_output = os.popen('arduino-cli compile --fqbn TleraCorp:stm32l0:IRNAS-env-module-L072Z LoRaWAN_Save_Commissioning_Rhino').read()
-  if "Sketch uses" in compile_output:
-      print("Compile successful!")
-  else:
-      print("Compile failed!")
+            
+    if activation_type == "abp":
+        ttnctl_device_register_abp = os.popen('ttnctl devices personalize '+device_id).read()
+        print(ttnctl_device_register_abp)
+        input_string=""
+        for line in ttnctl_device_register_abp.splitlines():
+            #print("line "+ line)
+            if "Personalized device" in line:
+                input_string=line
+                #print("input_string "+ input_string)
 
-  upload_output = os.popen('arduino-cli upload -p /dev/ttyACM0 --fqbn TleraCorp:stm32l0:IRNAS-env-module-L072Z LoRaWAN_Save_Commissioning_Rhino').read()
-  # this does not work because upload does not give the output to the variable
-  '''if "Verified OK" in upload_output:
-      print("Upload successful!")
-  else:
-      print("Upload failed!")'''
-  #print(upload_output)
+        if input_string == "":
+            print("Key error")
+            break
+            
+        input_string =  ' '.join(input_string.split())
+        input_string_list = input_string.split(" ")
 
-  time.sleep(1)
+        AppSKey=""
+        DevAddr=""
+        NwkSKey=""
+        for item in input_string_list:
+            #print(item)
+            if "AppSKey" in item:
+                AppSKey=item.split("=")[1]
+                #print(AppSKey)
+            elif "DevAddr" in item:
+                DevAddr=item.split("=")[1]
+                #print(DevEUI)
+            elif "NwkSKey" in item:
+                NwkSKey=item.split("=")[1]
+                #print(AppEUI)
 
-  ### Upload the firmware to the device
+        f = open("LoRaWAN_Save_Commissioning_Rhino/provisioning.h", "w")
+        f.write("#define ABP\n\r")
+        f.write("const char *devAddr = \""+DevAddr+"\";\n\r")
+        f.write("const char *nwkSKey = \""+NwkSKey+"\";\n\r")
+        f.write("const char *appSKey = \""+AppSKey+"\";\n\r")
+        f.close()
 
-  upload_output = os.popen('arduino-cli upload -p /dev/ttyACM0 --fqbn TleraCorp:stm32l0:IRNAS-env-module-L072Z -i board.cpp.dfu').read()
+    ### Provision the keys to the device
+    compile_output = os.popen(cfg["firmware"]["compile_keys"]).read()
+    if "Sketch uses" in compile_output:
+        print("Compile successful!")
+    else:
+        print("Compile failed!")
+
+    upload_output = os.popen(cfg["firmware"]["upload_keys"]).read()
+    # this does not work because upload does not give the output to the variable
+    '''if "Verified OK" in upload_output:
+        print("Upload successful!")
+    else:
+        print("Upload failed!")'''
+    #print(upload_output)
+
+    time.sleep(1)
+
+    ### Upload the firmware to the device
+
+    upload_output = os.popen(cfg["firmware"]["upload_firmware"]).read()
