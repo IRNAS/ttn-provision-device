@@ -2,7 +2,7 @@
 Simple script to read data from TheThingsNetwork and provision OTAA and ABP devices.
 
 ## Key features (TODO):
-1. Accpet command line arguments for `device-name`, `otaa/abp`, `deveui`
+1. Accept command line arguments for `device-name`, `otaa/abp`, `deveui`
 1. Load the list of already registered devices
 1. Notify if device exists already
 1. Fetch keys for the device
