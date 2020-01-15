@@ -4,3 +4,4 @@ env
 *.dfu
 *.hex
 *.elf
+*.swp
