@@ -2,7 +2,7 @@
 Simple script to read data from TheThingsNetwork and provision OTAA and ABP devices.
 
 ## Key features (TODO):
-1. Accpet command line arguments for `device-name`, `otaa/abp`, `deveui`
+1. Accept command line arguments for `device-name`, `otaa/abp`, `deveui`
 1. Load the list of already registered devices
 1. Notify if device exists already
 1. Fetch keys for the device
@@ -22,9 +22,12 @@ pip install -r requirements.txt
 ## Prepare config
 Create the config file `config.yaml` with the following structure, you can have multiple TTN applications defined, data will be shown for all nodes sending on those applications.
 ```
- <your app name>:
-   id: <ttn application id>
-   key: <ttn application key> 
+ttn-app:
+  id: <ttn application id>
+firmware:
+  compile_keys: arduino-cli compile --fqbn TleraCorp:stm32l0:IRNAS-env-module-L072Z LoRaWAN_Save_Commissioning_Rhino
+  upload_keys: arduino-cli upload -p /dev/ttyACM0 --fqbn TleraCorp:stm32l0:IRNAS-env-module-L072Z LoRaWAN_Save_Commissioning_Rhino
+  upload_firmware: arduino-cli upload -p /dev/ttyACM0 --fqbn TleraCorp:stm32l0:IRNAS-env-module-L072Z -i board.cpp.dfu
 ```
 
 ## Run the application

@@ -8,3 +8,4 @@ provisioning.h
 credentials.json
 build/*
 board*
+*.swp
