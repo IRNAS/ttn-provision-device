@@ -1,5 +1,7 @@
 # ttn-provision-device
-Simple script to read data from TheThingsNetwork and provision OTAA and ABP devices.
+Simple script to read data from TheThingsNetwork and provision OTAA and ABP devices with additional helper tools:
+ * `main.py` - main registration tool 
+ * `fetch_deice_credentials.py` - script creates a json file of all registered devices and their keys
 
 ## Key features (TODO):
 1. Accept command line arguments for `device-name`, `otaa/abp`, `deveui`
@@ -12,8 +14,8 @@ Simple script to read data from TheThingsNetwork and provision OTAA and ABP devi
 Download this repository. Set up the environment, recommended to use python virtual environment `pip install virtualenv`.
 
 ```
-git clone https://github.com/SloMusti/ttn-signal-test-python
-cd ttn-signal-test-python
+git clone https://github.com/SloMusti/ttn-provision-device
+cd ttn-provision-device
 python3 -m venv ./env
 source env/bin/activate
 pip install -r requirements.txt
