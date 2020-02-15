@@ -4,7 +4,6 @@
    key: <ttn application key> """
 
 import time
-import ttn
 import yaml
 import binascii
 import os
@@ -14,8 +13,8 @@ import sys
 
 ### Command line argument parser
 parser = argparse.ArgumentParser(description='Lorawan device provisioning tool!')
-parser.add_argument("--name", default=1, type=str,required=False, help="This is the device name")
-parser.add_argument("--key", default=1, type=str,required=False, help="This is ttn access key https://account.thethingsnetwork.org/users/authorize?client_id=ttnctl&redirect_uri=/oauth/callback/ttnctl&response_type=code")
+parser.add_argument("--name", default="", type=str,required=False, help="This is the device name")
+parser.add_argument("--key", default="", type=str,required=False, help="This is ttn access key https://account.thethingsnetwork.org/users/authorize?client_id=ttnctl&redirect_uri=/oauth/callback/ttnctl&response_type=code")
 parser.add_argument("--type", 
                     choices=["abp", "otaa"],
                     required=True, type=str, help="abp/otaa")

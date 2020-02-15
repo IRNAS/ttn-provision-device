@@ -4,3 +4,7 @@ env
 *.dfu
 *.hex
 *.elf
+provisioning.h
+credentials.json
+build/*
+board*

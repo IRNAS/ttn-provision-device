@@ -2,5 +2,6 @@
     "board": "TleraCorp:stm32l0:IRNAS-env-module-L072Z",
     "configuration": "speed=32,opt=os",
     "sketch": "LoRaWAN_Save_Commissioning_Rhino/LoRaWAN_Save_Commissioning_Rhino.ino",
-    "port": "/dev/ttyACM0"
+    "port": "/dev/ttyUSB0",
+    "output": "build"
 }
