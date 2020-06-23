@@ -4,7 +4,7 @@
    key: <ttn application key> """
 
 import time
-import ttn
+#import ttn
 import yaml
 import binascii
 import os
@@ -14,8 +14,8 @@ import sys
 
 ### Command line argument parser
 parser = argparse.ArgumentParser(description='Lorawan device provisioning tool!')
-parser.add_argument("--name", default=1, type=str,required=False, help="This is the device name")
-parser.add_argument("--key", default=1, type=str,required=False, help="This is ttn access key https://account.thethingsnetwork.org/users/authorize?client_id=ttnctl&redirect_uri=/oauth/callback/ttnctl&response_type=code")
+parser.add_argument("--name", default="", type=str,required=False, help="This is the device name")
+parser.add_argument("--key", default="", type=str,required=False, help="This is ttn access key https://account.thethingsnetwork.org/users/authorize?client_id=ttnctl&redirect_uri=/oauth/callback/ttnctl&response_type=code")
 parser.add_argument("--type", 
                     choices=["abp", "otaa"],
                     required=True, type=str, help="abp/otaa")
@@ -188,6 +188,24 @@ while True:
         f.write("const char *nwkSKey = \""+NwkSKey+"\";\n\r")
         f.write("const char *appSKey = \""+AppSKey+"\";\n\r")
         f.close()
+    ### flas clear 
+    device_output = os.popen(cfg["firmware"]["device_connect"]).read()
+    if "STM32L07x/STM32L08x" in device_output:
+        print("Device connected successful!")
+    else:
+        print("Device connection failed!")
+
+    flash_output = os.popen(cfg["firmware"]["flash_erase"]).read()
+    if "erased" in flash_output:
+        print("Flash erase successful!")
+    else:
+        print("Flash erase failed!")
+
+    eeprom_output = os.popen(cfg["firmware"]["eeprom_erase"]).read()
+    if "erased" in eeprom_output:
+        print("Eeprom erase successful!")
+    else:
+        print("Eeprom erase failed!")
 
     ### Provision the keys to the device
     compile_output = os.popen(cfg["firmware"]["compile_keys"]).read()

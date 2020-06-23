@@ -1,6 +1,13 @@
 log.txt
-config.yml
 env
 *.dfu
 *.hex
 *.elf
+*.map
+*.exe
+*.dll
+*.log
+.ttnctl
+.vscode
+**/LoRaWAN_Save_Commissioning_Rhino/*.dfu
+**/LoRaWAN_Save_Commissioning_Rhino/*.elf

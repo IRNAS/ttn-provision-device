@@ -1,0 +1,9 @@
+ttn-app:
+  id: hackthepoacher-camera
+firmware:
+  compile_keys: arduino-cli compile --fqbn IRNAS:stm32l0:IRNAS-env-module-L072Z LoRaWAN_Save_Commissioning_Rhino
+  upload_keys: arduino-cli upload -p /dev/ttyACM0 --fqbn IRNAS:stm32l0:IRNAS-env-module-L072Z LoRaWAN_Save_Commissioning_Rhino
+  upload_firmware: arduino-cli upload -p /dev/ttyACM0 --fqbn IRNAS:stm32l0:IRNAS-env-module-L072Z -i Dalekovod_20052020.dfu
+  device_connect:  ST-LINK_CLI -c SWD freq=4000 UR
+  flash_erase: ST-LINK_CLI -ME 
+  eeprom_erase: ST-LINK_CLI -SE ed1

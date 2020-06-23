@@ -20,7 +20,7 @@ pip install -r requirements.txt
 ```
 
 ## Prepare config
-Create the config file `config.yaml` with the following structure, you can have multiple TTN applications defined, data will be shown for all nodes sending on those applications.
+Create the config file `config.yml` with the following structure, you can have multiple TTN applications defined, data will be shown for all nodes sending on those applications.
 ```
  <your app name>:
    id: <ttn application id>
