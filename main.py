@@ -19,9 +19,11 @@ parser.add_argument("--key", default="", type=str,required=False, help="This is 
 parser.add_argument("--type", 
                     choices=["abp", "otaa"],
                     required=True, type=str, help="abp/otaa")
+parser.add_argument("--dtc", default="0", type=str,required=False, help="DTC tuning value")
 
 args = parser.parse_args()
 activation_type = args.type
+dtc_value=args.dtc
 
 if activation_type == "abp":
     print("ABP")
@@ -144,6 +146,7 @@ while True:
     # then write to .h file for compiling
     f = open("LoRaWAN_Save_Commissioning_Rhino/provisioning.h", "w")
     f.write("#define OTAA\n\r")
+    f.write("#define DTC_VALUE "+dtc_value+"\n\r")
     f.write("const char *appKey = \""+AppKey+"\";\n\r")
     f.write("const char *devEui = \""+DevEUI+"\";\n\r")
     f.write("const char *appEui = \""+AppEUI+"\";\n\r")
@@ -184,6 +187,7 @@ while True:
 
         f = open("LoRaWAN_Save_Commissioning_Rhino/provisioning.h", "w")
         f.write("#define ABP\n\r")
+        f.write("#define DTC_VALUE "+dtc_value+"\n\r")
         f.write("const char *devAddr = \""+DevAddr+"\";\n\r")
         f.write("const char *nwkSKey = \""+NwkSKey+"\";\n\r")
         f.write("const char *appSKey = \""+AppSKey+"\";\n\r")

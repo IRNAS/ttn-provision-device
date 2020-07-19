@@ -1,5 +1,6 @@
 #define ABP
-const char *devAddr = "26011DDF";
-const char *nwkSKey = "B9DC310226202ED54CB0FD2FFC71C5A9";
-const char *appSKey = "C9E3BB9E98997FE0926F963C6B784E03";
+#define DTC_VALUE 4
+const char *devAddr = "260112AB";
+const char *nwkSKey = "F32C89CBFCD382236E7374AC6ACF1004";
+const char *appSKey = "BF5EE6818B123E783F5736F8183E95C5";
 

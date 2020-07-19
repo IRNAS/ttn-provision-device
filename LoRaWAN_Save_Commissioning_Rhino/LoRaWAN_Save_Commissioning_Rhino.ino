@@ -8,6 +8,15 @@
 
 #include "LoRaWAN.h"
 #include "provisioning.h"
+    
+#define EEPROM_DATA_START_SETTINGS 0
+
+void setup( void ){
+
+// DTC tuning
+#ifdef DTC_VALUE
+    EEPROM.write(EEPROM_DATA_START_SETTINGS+1,DTC_VALUE);
+#endif //DTC_VALUE
 
 //OTAA
 #ifdef OTAA
@@ -16,7 +25,9 @@
 //const char *devEui  = "0101010101010101";
 //char devEui[32]; // read from the processor
 
-void setup( void ){
+
+
+
     //LoRaWAN.getDevEui(devEui, 18);
     // OTAA
     LoRaWAN.setAppEui(appEui);
@@ -29,15 +40,11 @@ void setup( void ){
     LoRaWAN.setDevAddr(devAddr);
     LoRaWAN.setNwkSKey(nwkSKey);
     LoRaWAN.setAppSKey(appSKey);
-}
-
 #endif
 
 //ABP
 #ifdef ABP
 
-void setup( void )
-{
     // ABP
     LoRaWAN.setDevAddr(devAddr);
     LoRaWAN.setNwkSKey(nwkSKey);
@@ -49,8 +56,10 @@ void setup( void )
     LoRaWAN.setAppEui(appEui);
     LoRaWAN.setAppKey(appKey);
     LoRaWAN.setDevEui(devEui);
-}
+
 #endif
+
+}
 
 void loop( void )
 {

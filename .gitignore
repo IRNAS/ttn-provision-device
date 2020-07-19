@@ -11,3 +11,4 @@ env
 .vscode
 **/LoRaWAN_Save_Commissioning_Rhino/*.dfu
 **/LoRaWAN_Save_Commissioning_Rhino/*.elf
+build
