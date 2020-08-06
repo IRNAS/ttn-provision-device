@@ -8,6 +8,7 @@
 
 #include "LoRaWAN.h"
 #include "provisioning.h"
+#include "EEPROM.h"
     
 #define EEPROM_DATA_START_SETTINGS 0
 
