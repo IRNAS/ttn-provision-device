@@ -1,5 +1,5 @@
 ttn-app:
-  id: hackthepoacher-camera
+  id: smartparks-wisent-tracker
 firmware:
   compile_keys: arduino-cli compile --fqbn IRNAS:stm32l0:IRNAS-env-module-L072Z LoRaWAN_Save_Commissioning_Rhino
   upload_keys: arduino-cli upload -p /dev/ttyACM0 --fqbn IRNAS:stm32l0:IRNAS-env-module-L072Z LoRaWAN_Save_Commissioning_Rhino

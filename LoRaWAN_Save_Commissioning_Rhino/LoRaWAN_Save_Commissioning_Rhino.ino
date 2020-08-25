@@ -12,12 +12,39 @@
     
 #define EEPROM_DATA_START_SETTINGS 0
 
+struct calibrationData_t{
+  uint8_t settings_byte;
+  uint8_t dtc_value;
+  float ads_calib;
+}__attribute__((packed));
+
+
+union calibrationPacket_t{
+  calibrationData_t data;
+  byte bytes[sizeof(calibrationData_t)];
+};
+
+calibrationPacket_t calibration_packet;
+
 void setup( void ){
 
+calibration_packet.data.settings_byte=0;
+calibration_packet.data.dtc_value=0;
+calibration_packet.data.ads_calib=0;
 // DTC tuning
 #ifdef DTC_VALUE
-    EEPROM.write(EEPROM_DATA_START_SETTINGS+1,DTC_VALUE);
+    calibration_packet.data.dtc_value=DTC_VALUE;
 #endif //DTC_VALUE
+
+// DTC tuning
+#ifdef ADS_CALIB_VALUE
+    calibration_packet.data.ads_calib=ADS_CALIB_VALUE;
+#endif //DTC_VALUE
+
+// write calibration to flash
+for(int i=0;i<sizeof(calibrationData_t);i++){
+    EEPROM.write(EEPROM_DATA_START_SETTINGS+i,calibration_packet.bytes[i]);
+}
 
 //OTAA
 #ifdef OTAA

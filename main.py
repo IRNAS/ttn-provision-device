@@ -20,6 +20,7 @@ parser.add_argument("--type",
                     choices=["abp", "otaa"],
                     required=True, type=str, help="abp/otaa")
 parser.add_argument("--dtc", default="0", type=str,required=False, help="DTC tuning value")
+parser.add_argument("--ads_calib", default="1", type=str,required=False, help="ADS calib value")
 
 args = parser.parse_args()
 activation_type = args.type
@@ -147,6 +148,7 @@ while True:
     f = open("LoRaWAN_Save_Commissioning_Rhino/provisioning.h", "w")
     f.write("#define OTAA\n\r")
     f.write("#define DTC_VALUE "+dtc_value+"\n\r")
+    f.write("#define ADS_CALIB_VALUE "+ads_calib_value+"\n\r")
     f.write("const char *appKey = \""+AppKey+"\";\n\r")
     f.write("const char *devEui = \""+DevEUI+"\";\n\r")
     f.write("const char *appEui = \""+AppEUI+"\";\n\r")
