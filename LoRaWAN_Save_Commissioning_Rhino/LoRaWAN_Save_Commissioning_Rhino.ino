@@ -30,7 +30,7 @@ void setup( void ){
 
 calibration_packet.data.settings_byte=0;
 calibration_packet.data.dtc_value=0;
-calibration_packet.data.ads_calib=0;
+calibration_packet.data.ads_calib=1;
 // DTC tuning
 #ifdef DTC_VALUE
     calibration_packet.data.dtc_value=DTC_VALUE;

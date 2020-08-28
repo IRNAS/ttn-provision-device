@@ -25,6 +25,7 @@ parser.add_argument("--ads_calib", default="1", type=str,required=False, help="A
 args = parser.parse_args()
 activation_type = args.type
 dtc_value=args.dtc
+ads_calib_value = args.ads_calib
 
 if activation_type == "abp":
     print("ABP")
@@ -190,6 +191,7 @@ while True:
         f = open("LoRaWAN_Save_Commissioning_Rhino/provisioning.h", "w")
         f.write("#define ABP\n\r")
         f.write("#define DTC_VALUE "+dtc_value+"\n\r")
+        f.write("#define ADS_CALIB_VALUE "+ads_calib_value+"\n\r")
         f.write("const char *devAddr = \""+DevAddr+"\";\n\r")
         f.write("const char *nwkSKey = \""+NwkSKey+"\";\n\r")
         f.write("const char *appSKey = \""+AppSKey+"\";\n\r")
