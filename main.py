@@ -17,10 +17,14 @@ parser = argparse.ArgumentParser(description='Lorawan device provisioning tool!'
 parser.add_argument("--name", default="", type=str,required=False, help="This is the device name")
 parser.add_argument("--key", default="", type=str,required=False, help="This is ttn access key https://account.thethingsnetwork.org/users/authorize?client_id=ttnctl&redirect_uri=/oauth/callback/ttnctl&response_type=code")
 parser.add_argument("--type", 
-                    choices=["abp", "otaa"],
+                    choices=["abp", "otaa", "otaa-manual"],
                     required=True, type=str, help="abp/otaa")
 parser.add_argument("--dtc", default="0", type=str,required=False, help="DTC tuning value")
 parser.add_argument("--ads_calib", default="1", type=str,required=False, help="ADS calib value")
+
+parser.add_argument("--appkey", default="", type=str,required=False, help="OTAA manual AppKey")
+parser.add_argument("--deveui", default="", type=str,required=False, help="OTAA manual DevEUI")
+parser.add_argument("--appeui", default="", type=str,required=False, help="OTAA manual AppEUI")
 
 args = parser.parse_args()
 activation_type = args.type
@@ -31,6 +35,8 @@ if activation_type == "abp":
     print("ABP")
 elif activation_type == "otaa":
   print("OTAA")
+elif activation_type == "otaa-manual":
+  print("OTAA MANUAL")
 else:
     print("undefined")
 
@@ -69,92 +75,102 @@ device_name=args.name
 
 
 while True:
-    input_var = input("Enter device name to register or type a for automatic numbering: ")
-    # TODO enable the name to be overwritten from cli
-    if(input_var == "a"):
-        device_name="auto"
-    else:
-        device_name=input_var #TODO: calidate device naming convention
-    print("Device name selected: "+device_name)
-
-    ttnctl_device_list = os.popen('ttnctl devices list').read()
-    # get a list of parsed device ids
-    ttnctl_device_list_devid=[]
-    for line in ttnctl_device_list.splitlines():
-        if "DevID"in line:
-            pass
-        elif "INFO"in line:
-            pass
+    if activation_type != "otaa-manual":
+        input_var = input("Enter device name to register or type a for automatic numbering: ")
+        # TODO enable the name to be overwritten from cli
+        if(input_var == "a"):
+            device_name="auto"
         else:
-            line_split =  ' '.join(line.split())
-            line_split = line_split.split(" ")
-            if line_split[0] is not '':
-                ttnctl_device_list_devid.append(line_split[0])
-    #determine the largest number of all
-    maximum_id=0
-    for item in ttnctl_device_list_devid:
-        try:
-            number=int(item.split("-")[-1])
-            maximum_id=max(number,maximum_id)
-        except:
-            pass
+            device_name=input_var #TODO: calidate device naming convention
+        print("Device name selected: "+device_name)
 
-    print(ttnctl_device_list)
-    print(ttnctl_device_list_devid)
-    print(maximum_id)
+        ttnctl_device_list = os.popen('ttnctl devices list').read()
+        # get a list of parsed device ids
+        ttnctl_device_list_devid=[]
+        for line in ttnctl_device_list.splitlines():
+            if "DevID"in line:
+                pass
+            elif "INFO"in line:
+                pass
+            else:
+                line_split =  ' '.join(line.split())
+                line_split = line_split.split(" ")
+                if line_split[0] != '':
+                    ttnctl_device_list_devid.append(line_split[0])
+        #determine the largest number of all
+        maximum_id=0
+        for item in ttnctl_device_list_devid:
+            try:
+                number=int(item.split("-")[-1])
+                maximum_id=max(number,maximum_id)
+            except:
+                pass
 
-    if device_name in ttnctl_device_list:
-        input_var = input("Device "+device_name+ " already registered, continue? [y/n] ")
-        if(input_var == "y"):
-            pass
+        print(ttnctl_device_list)
+        print(ttnctl_device_list_devid)
+        print(maximum_id)
+
+        if device_name in ttnctl_device_list:
+            input_var = input("Device "+device_name+ " already registered, continue? [y/n] ")
+            if(input_var == "y"):
+                pass
+            else:
+                break
+
+        device_id=""
+        print("device_name: " + device_name)
+        if device_name == "auto":
+            # find the largest device id already registered and take the next one
+            device_id="%s-%03d" % (app_id, maximum_id+1)
+            print(device_id)
+
         else:
-            break
+            device_id=device_name
+        
+        ttnctl_device_register = os.popen('ttnctl devices register '+device_id).read()
+        print(ttnctl_device_register)
+        #first register as OTAA, then provision to ABP if required
+        # all of these is to parse outputs to variables
+        input_string=""
+        for line in ttnctl_device_register.splitlines():
+            if "Registered device" in line:
+                input_string=line
+        input_string =  ' '.join(input_string.split())
+        input_string_list = input_string.split(" ")
 
-    device_id=""
-    print("device_name: " + device_name)
-    if device_name == "auto":
-        # find the largest device id already registered and take the next one
-        device_id="%s-%03d" % (app_id, maximum_id+1)
-        print(device_id)
+        AppKey=""
+        DevEUI=""
+        AppEUI=""
+        for item in input_string_list:
+            #print(item)
+            if "AppKey" in item:
+                AppKey=item.split("=")[1]
+                #print(AppKey)
+            elif "DevEUI" in item:
+                DevEUI=item.split("=")[1]
+                #print(DevEUI)
+            elif "AppEUI" in item:
+                AppEUI=item.split("=")[1]
+                #print(AppEUI)
+        # then write to .h file for compiling
+        f = open("LoRaWAN_Save_Commissioning_Rhino/provisioning.h", "w")
+        f.write("#define OTAA\n\r")
+        f.write("#define DTC_VALUE "+dtc_value+"\n\r")
+        f.write("#define ADS_CALIB_VALUE "+ads_calib_value+"\n\r")
+        f.write("const char *appKey = \""+AppKey+"\";\n\r")
+        f.write("const char *devEui = \""+DevEUI+"\";\n\r")
+        f.write("const char *appEui = \""+AppEUI+"\";\n\r")
+        f.close()
 
-    else:
-        device_id=device_name
-    
-    ttnctl_device_register = os.popen('ttnctl devices register '+device_id).read()
-    print(ttnctl_device_register)
-    #first register as OTAA, then provision to ABP if required
-    # all of these is to parse outputs to variables
-    input_string=""
-    for line in ttnctl_device_register.splitlines():
-        if "Registered device" in line:
-            input_string=line
-    input_string =  ' '.join(input_string.split())
-    input_string_list = input_string.split(" ")
-
-    AppKey=""
-    DevEUI=""
-    AppEUI=""
-    for item in input_string_list:
-        #print(item)
-        if "AppKey" in item:
-            AppKey=item.split("=")[1]
-            #print(AppKey)
-        elif "DevEUI" in item:
-            DevEUI=item.split("=")[1]
-            #print(DevEUI)
-        elif "AppEUI" in item:
-            AppEUI=item.split("=")[1]
-            #print(AppEUI)
-    # then write to .h file for compiling
-    f = open("LoRaWAN_Save_Commissioning_Rhino/provisioning.h", "w")
-    f.write("#define OTAA\n\r")
-    f.write("#define DTC_VALUE "+dtc_value+"\n\r")
-    f.write("#define ADS_CALIB_VALUE "+ads_calib_value+"\n\r")
-    f.write("const char *appKey = \""+AppKey+"\";\n\r")
-    f.write("const char *devEui = \""+DevEUI+"\";\n\r")
-    f.write("const char *appEui = \""+AppEUI+"\";\n\r")
-    f.close()
-
+    if activation_type == "otaa-manual":
+        f = open("LoRaWAN_Save_Commissioning_Rhino/provisioning.h", "w")
+        f.write("#define OTAA\n\r")
+        f.write("#define DTC_VALUE "+dtc_value+"\n\r")
+        f.write("#define ADS_CALIB_VALUE "+ads_calib_value+"\n\r")
+        f.write("const char *appKey = \""+args.appkey+"\";\n\r")
+        f.write("const char *devEui = \""+args.deveui+"\";\n\r")
+        f.write("const char *appEui = \""+args.appeui+"\";\n\r")
+        f.close()
             
     if activation_type == "abp":
         ttnctl_device_register_abp = os.popen('ttnctl devices personalize '+device_id).read()
