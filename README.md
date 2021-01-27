@@ -34,3 +34,10 @@ firmware:
 
 ## Run the application
 Run the application within the active virtual environment with `python main.py` and expect a similar output to:
+
+## Manual OTAA provisioning wihthout TTN login:
+
+```
+python3 main.py --type otaa-manual --appkey <key> --deveui <eui> --appeui <appeui>
+```
+
